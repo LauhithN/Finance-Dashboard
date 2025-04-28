@@ -162,6 +162,16 @@ function groupExpensesByCategory(expenses) {
   return grouped;
 }
 
+function showSuccessAlert(message) {
+  const alert = document.getElementById('success-alert');
+  const alertMessage = alert.querySelector('.alert-message');
+  alertMessage.textContent = message;
+  alert.classList.remove('hidden');
+  setTimeout(() => {
+    alert.classList.add('hidden');
+  }, 3000);
+}
+
 // --- Expense Chart (Pie) ---
 function renderExpenseChart() {
   const grouped = groupExpensesByCategory(expenses);
@@ -217,13 +227,20 @@ function renderSavingsGoals() {
   let html = '';
   for (const goal of savingsGoals) {
     const percent = Math.min(100, Math.round((goal.saved / goal.target) * 100));
-    html += `<div class="savings-goal">
-      <div class="savings-goal-title">${goal.name}</div>
-      <div class="savings-goal-details">Saved: $${goal.saved} / $${goal.target} (${percent}%)</div>
-      <div class="progress-bar-bg"><div class="progress-bar" style="width:0%" data-width="${percent}%"></div></div>
-    </div>`;
+    html += `
+      <div class="savings-goal">
+        <div class="savings-goal-title">
+          ${goal.name}
+          <button class="update-btn" onclick="openSavingsModal(${savingsGoals.indexOf(goal)})">Update</button>
+        </div>
+        <div class="savings-goal-details">Saved: $${goal.saved} / $${goal.target} (${percent}%)</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar" style="width:0%" data-width="${percent}%"></div>
+        </div>
+      </div>`;
   }
   document.getElementById('savings-goals').innerHTML = html;
+  
   // Animate bars
   setTimeout(() => {
     document.querySelectorAll('.progress-bar').forEach(bar => {
@@ -231,6 +248,58 @@ function renderSavingsGoals() {
     });
   }, 100);
 }
+
+function openSavingsModal(index = -1) {
+  const modal = document.getElementById('savings-modal');
+  const form = document.getElementById('savings-form');
+  const deleteBtn = form.querySelector('.delete-btn');
+  
+  if (index >= 0) {
+    const goal = savingsGoals[index];
+    form.goalIndex.value = index;
+    form.name.value = goal.name;
+    form.target.value = goal.target;
+    form.saved.value = goal.saved;
+    deleteBtn.classList.remove('hidden');
+  } else {
+    form.reset();
+    form.goalIndex.value = '';
+    deleteBtn.classList.add('hidden');
+  }
+  
+  modal.classList.remove('hidden');
+}
+
+document.getElementById('savings-form').onsubmit = (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    name: form.name.value,
+    target: parseFloat(form.target.value),
+    saved: parseFloat(form.saved.value)
+  };
+  
+  const index = form.goalIndex.value;
+  if (index === '') {
+    savingsGoals.push(data);
+  } else {
+    savingsGoals[parseInt(index)] = data;
+  }
+  
+  document.getElementById('savings-modal').classList.add('hidden');
+  renderSavingsGoals();
+  showSuccessAlert('Savings goal updated successfully!');
+};
+
+document.querySelector('#savings-form .delete-btn').onclick = (e) => {
+  const index = document.getElementById('savings-form').goalIndex.value;
+  if (index !== '') {
+    savingsGoals.splice(parseInt(index), 1);
+    document.getElementById('savings-modal').classList.add('hidden');
+    renderSavingsGoals();
+    showSuccessAlert('Savings goal deleted successfully!');
+  }
+};
 
 // --- Investment Chart (Line) ---
 function renderInvestmentChart() {
@@ -270,7 +339,8 @@ function renderInvestmentChart() {
 // --- Bills Table ---
 function renderBillsTable() {
   const today = new Date();
-  let html = '<thead><tr><th>Bill</th><th>Due Date</th><th>Status</th></tr></thead><tbody>';
+  let html = '<thead><tr><th>Bill</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  
   for (const bill of bills) {
     const dueDate = new Date(bill.due);
     let statusClass = bill.status.toLowerCase();
@@ -278,11 +348,83 @@ function renderBillsTable() {
       const diff = (dueDate - today) / (1000 * 60 * 60 * 24);
       if (diff <= 3 && diff >= 0) statusClass = 'due-soon';
     }
-    html += `<tr><td>${bill.name}</td><td>${bill.due}</td><td><span class="bill-status ${statusClass}">${bill.status}</span></td></tr>`;
+    
+    html += `
+      <tr class="${bill.status === 'Paid' ? 'bill-row-paid' : ''}">
+        <td>${bill.name}</td>
+        <td>${bill.due}</td>
+        <td><span class="bill-status ${statusClass}">${bill.status}</span></td>
+        <td>
+          ${bill.status === 'Unpaid' ? 
+            `<button class="mark-paid-btn" onclick="markBillPaid(${bills.indexOf(bill)})">Mark Paid</button>` :
+            ''
+          }
+          <button class="update-btn" onclick="openBillModal(${bills.indexOf(bill)})">Edit</button>
+        </td>
+      </tr>`;
   }
+  
   html += '</tbody>';
   document.getElementById('bills-table').innerHTML = html;
 }
+
+function markBillPaid(index) {
+  bills[index].status = 'Paid';
+  renderBillsTable();
+  showSuccessAlert('Bill marked as paid!');
+}
+
+function openBillModal(index = -1) {
+  const modal = document.getElementById('bill-modal');
+  const form = document.getElementById('bill-form');
+  const deleteBtn = form.querySelector('.delete-btn');
+  
+  if (index >= 0) {
+    const bill = bills[index];
+    form.billIndex.value = index;
+    form.name.value = bill.name;
+    form.due.value = bill.due;
+    form.status.value = bill.status;
+    deleteBtn.classList.remove('hidden');
+  } else {
+    form.reset();
+    form.billIndex.value = '';
+    deleteBtn.classList.add('hidden');
+  }
+  
+  modal.classList.remove('hidden');
+}
+
+document.getElementById('bill-form').onsubmit = (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    name: form.name.value,
+    due: form.due.value,
+    status: form.status.value
+  };
+  
+  const index = form.billIndex.value;
+  if (index === '') {
+    bills.push(data);
+  } else {
+    bills[parseInt(index)] = data;
+  }
+  
+  document.getElementById('bill-modal').classList.add('hidden');
+  renderBillsTable();
+  showSuccessAlert('Bill updated successfully!');
+};
+
+document.querySelector('#bill-form .delete-btn').onclick = (e) => {
+  const index = document.getElementById('bill-form').billIndex.value;
+  if (index !== '') {
+    bills.splice(parseInt(index), 1);
+    document.getElementById('bill-modal').classList.add('hidden');
+    renderBillsTable();
+    showSuccessAlert('Bill deleted successfully!');
+  }
+};
 
 // --- Budget Metrics ---
 function renderBudgetMetrics() {
@@ -303,29 +445,48 @@ function renderBudgetMetrics() {
   }, 100);
 }
 
-// --- Add Expense Modal Logic ---
-const addBtn = document.getElementById('add-expense-btn');
-const modal = document.getElementById('add-expense-modal');
-const closeBtn = document.querySelector('.close-btn');
-const form = document.getElementById('add-expense-form');
+// --- Budget Updates ---
+function openBudgetModal() {
+  const modal = document.getElementById('budget-modal');
+  const form = document.getElementById('budget-form');
+  const select = form.category;
+  
+  // Update category options if needed
+  select.onchange = () => {
+    const budget = budgets.find(b => b.category === select.value);
+    if (budget) {
+      form.budgeted.value = budget.budgeted;
+    }
+  };
+  
+  // Set initial values
+  select.value = budgets[0].category;
+  form.budgeted.value = budgets[0].budgeted;
+  
+  modal.classList.remove('hidden');
+}
 
-addBtn.onclick = () => { modal.classList.remove('hidden'); };
-closeBtn.onclick = () => { modal.classList.add('hidden'); };
-window.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
-
-form.onsubmit = (e) => {
+document.getElementById('budget-form').onsubmit = (e) => {
   e.preventDefault();
-  const data = new FormData(form);
-  expenses.push({
-    category: data.get('category'),
-    description: data.get('description'),
-    amount: parseFloat(data.get('amount')),
-    date: data.get('date'),
-  });
-  modal.classList.add('hidden');
-  form.reset();
-  renderAll();
+  const form = e.target;
+  const category = form.category.value;
+  const budgeted = parseFloat(form.budgeted.value);
+  
+  const budget = budgets.find(b => b.category === category);
+  if (budget) {
+    budget.budgeted = budgeted;
+  }
+  
+  document.getElementById('budget-modal').classList.add('hidden');
+  renderBudgetMetrics();
+  showSuccessAlert('Budget updated successfully!');
 };
+
+// --- Initialize Modals ---
+setupModal('savings-modal', 'add-savings-goal-btn');
+setupModal('investment-modal', 'update-investment-btn');
+setupModal('bill-modal', 'add-bill-btn');
+setupModal('budget-modal', 'update-budget-btn');
 
 // --- Render All Sections ---
 function renderAll() {
