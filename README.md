@@ -1,6 +1,6 @@
 # Personal Finance Dashboard
 
-A responsive and interactive personal finance dashboard built with vanilla HTML, CSS, and JavaScript. No frameworks or libraries required!
+A responsive and interactive personal finance dashboard built with vanilla HTML, CSS, and JavaScript. No frameworks or libraries used
 
 ## Features
 
