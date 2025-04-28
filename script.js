@@ -43,6 +43,115 @@ const budgets = [
   { category: 'Other', budgeted: 50 },
 ];
 
+// --- Daily Transactions Data ---
+const transactions = [
+  { date: '2024-06-01', category: 'Income', description: 'Salary', amount: 3000 },
+  { date: '2024-06-01', category: 'Rent', description: 'Monthly Rent', amount: -950 },
+  { date: '2024-06-02', category: 'Food', description: 'Groceries', amount: -120.50 },
+  { date: '2024-06-03', category: 'Utilities', description: 'Electricity Bill', amount: -60 },
+  { date: '2024-06-04', category: 'Transport', description: 'Bus Pass', amount: -45 },
+];
+
+let currentSort = { field: 'date', ascending: true };
+let currentFilter = 'all';
+
+// --- Daily Transactions Functions ---
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatAmount(amount) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount);
+}
+
+function renderTransactions() {
+  const tbody = document.querySelector('#transactions-table tbody');
+  let filteredTransactions = transactions.filter(t => 
+    currentFilter === 'all' || t.category === currentFilter
+  );
+
+  // Sort transactions
+  filteredTransactions.sort((a, b) => {
+    let aVal = a[currentSort.field];
+    let bVal = b[currentSort.field];
+    
+    if (currentSort.field === 'date') {
+      aVal = new Date(aVal).getTime();
+      bVal = new Date(bVal).getTime();
+    }
+    
+    return currentSort.ascending ? aVal - bVal : bVal - aVal;
+  });
+
+  tbody.innerHTML = filteredTransactions.map(t => `
+    <tr>
+      <td>${formatDate(t.date)}</td>
+      <td>${t.category}</td>
+      <td>${t.description}</td>
+      <td class="${t.amount >= 0 ? 'amount-positive' : 'amount-negative'}">${formatAmount(t.amount)}</td>
+    </tr>
+  `).join('');
+
+  // Update sort buttons
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    const field = btn.dataset.sort;
+    btn.classList.toggle('active', field === currentSort.field);
+  });
+}
+
+// --- Transaction Form Handler ---
+document.getElementById('transaction-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  
+  const transaction = {
+    date: data.get('date'),
+    category: data.get('category'),
+    description: data.get('description'),
+    amount: parseFloat(data.get('amount')),
+  };
+
+  // Add to transactions array
+  transactions.unshift(transaction);
+
+  // If it's an expense (negative amount), add it to expenses array
+  if (transaction.amount < 0) {
+    expenses.push({
+      category: transaction.category,
+      description: transaction.description,
+      amount: Math.abs(transaction.amount),
+      date: transaction.date
+    });
+  }
+
+  // Reset form and update display
+  form.reset();
+  renderAll();
+});
+
+// --- Sort and Filter Handlers ---
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const field = btn.dataset.sort;
+    if (currentSort.field === field) {
+      currentSort.ascending = !currentSort.ascending;
+    } else {
+      currentSort = { field, ascending: true };
+    }
+    renderTransactions();
+  });
+});
+
+document.getElementById('category-filter').addEventListener('change', (e) => {
+  currentFilter = e.target.value;
+  renderTransactions();
+});
+
 // --- Utility Functions ---
 function groupExpensesByCategory(expenses) {
   const grouped = {};
@@ -222,6 +331,7 @@ form.onsubmit = (e) => {
 function renderAll() {
   renderExpenseChart();
   renderExpenseTable();
+  renderTransactions();
   renderSavingsGoals();
   renderInvestmentChart();
   renderBillsTable();
