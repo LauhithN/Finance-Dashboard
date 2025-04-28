@@ -182,15 +182,24 @@ h2 {
 .modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(45,108,223,0.08);
+  background: rgba(45,108,223,0);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  transition: background 0.3s ease;
+  backdrop-filter: blur(0);
 }
+
+.modal.fade-in {
+  background: rgba(45,108,223,0.08);
+  backdrop-filter: blur(2px);
+}
+
 .modal.hidden {
   display: none;
 }
+
 .modal-content {
   background: #fff;
   border-radius: 12px;
@@ -199,7 +208,16 @@ h2 {
   max-width: 90vw;
   box-shadow: 0 4px 24px rgba(45,108,223,0.12);
   position: relative;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
+.fade-in .modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
 .close-btn {
   position: absolute;
   top: 1rem;
@@ -424,10 +442,32 @@ h2 {
   color: #2d6cdf;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 
 .update-btn:hover {
   background: #e3eefd;
+}
+
+.update-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background: rgba(45,108,223,0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.update-btn:active::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  transition: 0s;
 }
 
 .mark-paid-btn {
@@ -473,7 +513,7 @@ h2 {
   position: fixed;
   bottom: 2rem;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 100%);
   background: #e0f7e9;
   color: #1ca97a;
   padding: 0.8rem 1.5rem;
@@ -483,13 +523,17 @@ h2 {
   gap: 0.5rem;
   box-shadow: 0 4px 12px rgba(28,169,122,0.15);
   z-index: 1500;
-  transition: all 0.3s;
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.alert.fade-in {
+  transform: translate(-50%, 0);
+  opacity: 1;
 }
 
 .alert.hidden {
-  opacity: 0;
-  transform: translate(-50%, 100%);
-  pointer-events: none;
+  display: none;
 }
 
 .checkmark {
@@ -562,4 +606,68 @@ h2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* Form Field Animations */
+.modal input,
+.modal select {
+  border: 1px solid #eaf1fb;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal input:focus,
+.modal select:focus {
+  border-color: #2d6cdf;
+  box-shadow: 0 0 0 3px rgba(45,108,223,0.1);
+  outline: none;
+}
+
+/* Save Button Animation */
+.modal form button[type="submit"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.modal form button[type="submit"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.modal form button[type="submit"]:active::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  transition: 0s;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Budget Bar Animation */
+.budget-bar {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Row Update Animation */
+@keyframes highlight-row {
+  0% {
+    background: rgba(45,108,223,0.1);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.highlight-row {
+  animation: highlight-row 1s ease-out;
 } 

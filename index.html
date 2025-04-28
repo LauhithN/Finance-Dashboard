@@ -150,23 +150,29 @@
   <div id="savings-modal" class="modal hidden">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
-      <h3>Add/Update Savings Goal</h3>
+      <h3>Update Savings Goal</h3>
       <form id="savings-form">
-        <input type="hidden" name="goalIndex" value="">
-        <label>
-          Goal Name:
-          <input type="text" name="name" required>
-        </label>
-        <label>
-          Target Amount:
-          <input type="number" name="target" min="0.01" step="0.01" required>
-        </label>
-        <label>
-          Current Savings:
-          <input type="number" name="saved" min="0" step="0.01" required>
-        </label>
+        <input type="hidden" name="goalIndex">
+        <div class="form-row">
+          <label>
+            Goal Name
+            <input type="text" name="name" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Target Amount
+            <input type="number" name="target" min="0" step="0.01" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Amount Saved
+            <input type="number" name="saved" min="0" step="0.01" required>
+          </label>
+        </div>
         <div class="form-buttons">
-          <button type="submit">Save</button>
+          <button type="submit" class="action-btn">Save Changes</button>
           <button type="button" class="delete-btn hidden">Delete Goal</button>
         </div>
       </form>
@@ -177,41 +183,53 @@
       <span class="close-btn">&times;</span>
       <h3>Update Investment</h3>
       <form id="investment-form">
-        <label>
-          Current Value:
-          <input type="number" name="currentValue" min="0" step="0.01" required>
-        </label>
-        <label>
-          Total Invested:
-          <input type="number" name="totalInvested" min="0" step="0.01" required>
-        </label>
-        <button type="submit">Update</button>
+        <div class="form-row">
+          <label>
+            Current Value
+            <input type="number" name="currentValue" min="0" step="0.01" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Total Invested
+            <input type="number" name="totalInvested" min="0" step="0.01" required>
+          </label>
+        </div>
+        <div class="form-buttons">
+          <button type="submit" class="action-btn">Save Changes</button>
+        </div>
       </form>
     </div>
   </div>
   <div id="bill-modal" class="modal hidden">
     <div class="modal-content">
       <span class="close-btn">&times;</span>
-      <h3>Add/Update Bill</h3>
+      <h3>Update Bill</h3>
       <form id="bill-form">
-        <input type="hidden" name="billIndex" value="">
-        <label>
-          Bill Name:
-          <input type="text" name="name" required>
-        </label>
-        <label>
-          Due Date:
-          <input type="date" name="due" required>
-        </label>
-        <label>
-          Status:
-          <select name="status" required>
-            <option value="Unpaid">Unpaid</option>
-            <option value="Paid">Paid</option>
-          </select>
-        </label>
+        <input type="hidden" name="billIndex">
+        <div class="form-row">
+          <label>
+            Bill Name
+            <input type="text" name="name" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Due Date
+            <input type="date" name="due" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Status
+            <select name="status" required>
+              <option value="Unpaid">Unpaid</option>
+              <option value="Paid">Paid</option>
+            </select>
+          </label>
+        </div>
         <div class="form-buttons">
-          <button type="submit">Save</button>
+          <button type="submit" class="action-btn">Save Changes</button>
           <button type="button" class="delete-btn hidden">Delete Bill</button>
         </div>
       </form>
@@ -222,22 +240,21 @@
       <span class="close-btn">&times;</span>
       <h3>Update Budget</h3>
       <form id="budget-form">
-        <label>
-          Category:
-          <select name="category" required>
-            <option value="Food">Food</option>
-            <option value="Rent">Rent</option>
-            <option value="Utilities">Utilities</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Transport">Transport</option>
-            <option value="Other">Other</option>
-          </select>
-        </label>
-        <label>
-          Monthly Budget:
-          <input type="number" name="budgeted" min="0" step="0.01" required>
-        </label>
-        <button type="submit">Update</button>
+        <div class="form-row">
+          <label>
+            Category
+            <input type="text" name="category" readonly>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            Budgeted Amount
+            <input type="number" name="budgeted" min="0" step="0.01" required>
+          </label>
+        </div>
+        <div class="form-buttons">
+          <button type="submit" class="action-btn">Save Changes</button>
+        </div>
       </form>
     </div>
   </div>

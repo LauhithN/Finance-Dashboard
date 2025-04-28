@@ -162,14 +162,53 @@ function groupExpensesByCategory(expenses) {
   return grouped;
 }
 
+// --- Modal Management ---
+function setupModal(modalId) {
+  const modal = document.getElementById(modalId);
+  const closeBtn = modal.querySelector('.close-btn');
+  
+  closeBtn.onclick = () => {
+    hideModal(modal);
+  };
+  
+  window.onclick = (e) => {
+    if (e.target === modal) {
+      hideModal(modal);
+    }
+  };
+  
+  return modal;
+}
+
+function showModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.classList.remove('hidden');
+  // Trigger reflow for animation
+  void modal.offsetWidth;
+  modal.classList.add('fade-in');
+}
+
+function hideModal(modal) {
+  modal.classList.remove('fade-in');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 300);
+}
+
 function showSuccessAlert(message) {
   const alert = document.getElementById('success-alert');
   const alertMessage = alert.querySelector('.alert-message');
   alertMessage.textContent = message;
   alert.classList.remove('hidden');
+  void alert.offsetWidth; // Trigger reflow
+  alert.classList.add('fade-in');
+  
   setTimeout(() => {
-    alert.classList.add('hidden');
-  }, 3000);
+    alert.classList.remove('fade-in');
+    setTimeout(() => {
+      alert.classList.add('hidden');
+    }, 300);
+  }, 2000);
 }
 
 // --- Expense Chart (Pie) ---
@@ -222,28 +261,38 @@ function renderExpenseTable() {
   document.getElementById('expense-table').innerHTML = html;
 }
 
-// --- Savings Goals ---
+// --- Savings Goals Updates ---
 function renderSavingsGoals() {
   let html = '';
-  for (const goal of savingsGoals) {
+  savingsGoals.forEach((goal, index) => {
     const percent = Math.min(100, Math.round((goal.saved / goal.target) * 100));
     html += `
-      <div class="savings-goal">
+      <div class="savings-goal" data-index="${index}">
         <div class="savings-goal-title">
           ${goal.name}
-          <button class="update-btn" onclick="openSavingsModal(${savingsGoals.indexOf(goal)})">Update</button>
+          <button class="update-btn" data-action="update-savings" data-index="${index}">Update</button>
         </div>
-        <div class="savings-goal-details">Saved: $${goal.saved} / $${goal.target} (${percent}%)</div>
+        <div class="savings-goal-details">Saved: $${goal.saved.toFixed(2)} / $${goal.target.toFixed(2)} (${percent}%)</div>
         <div class="progress-bar-bg">
           <div class="progress-bar" style="width:0%" data-width="${percent}%"></div>
         </div>
       </div>`;
-  }
-  document.getElementById('savings-goals').innerHTML = html;
+  });
   
-  // Animate bars
+  const container = document.getElementById('savings-goals');
+  container.innerHTML = html;
+  
+  // Attach event listeners to new buttons
+  container.querySelectorAll('.update-btn[data-action="update-savings"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      openSavingsModal(index);
+    });
+  });
+  
+  // Animate progress bars
   setTimeout(() => {
-    document.querySelectorAll('.progress-bar').forEach(bar => {
+    container.querySelectorAll('.progress-bar').forEach(bar => {
       bar.style.width = bar.getAttribute('data-width');
     });
   }, 100);
@@ -267,7 +316,7 @@ function openSavingsModal(index = -1) {
     deleteBtn.classList.add('hidden');
   }
   
-  modal.classList.remove('hidden');
+  showModal('savings-modal');
 }
 
 document.getElementById('savings-form').onsubmit = (e) => {
@@ -286,7 +335,7 @@ document.getElementById('savings-form').onsubmit = (e) => {
     savingsGoals[parseInt(index)] = data;
   }
   
-  document.getElementById('savings-modal').classList.add('hidden');
+  hideModal(document.getElementById('savings-modal'));
   renderSavingsGoals();
   showSuccessAlert('Savings goal updated successfully!');
 };
@@ -295,13 +344,13 @@ document.querySelector('#savings-form .delete-btn').onclick = (e) => {
   const index = document.getElementById('savings-form').goalIndex.value;
   if (index !== '') {
     savingsGoals.splice(parseInt(index), 1);
-    document.getElementById('savings-modal').classList.add('hidden');
+    hideModal(document.getElementById('savings-modal'));
     renderSavingsGoals();
     showSuccessAlert('Savings goal deleted successfully!');
   }
 };
 
-// --- Investment Chart (Line) ---
+// --- Investment Updates ---
 function renderInvestmentChart() {
   const w = 540, h = 180, pad = 40;
   const values = investmentHistory.map(d => d.value);
@@ -334,14 +383,47 @@ function renderInvestmentChart() {
   metrics += `<div class="metric">Current Value<br>$${currentValue}</div>`;
   metrics += `<div class="metric">Profit/Loss<br><span style="color:${profit >= 0 ? '#1ca97a' : '#e23c3c'}">$${profit}</span></div>`;
   document.getElementById('investment-metrics').innerHTML = metrics;
+
+  // Add update button event listener
+  document.getElementById('update-investment-btn').addEventListener('click', openInvestmentModal);
 }
 
-// --- Bills Table ---
+function openInvestmentModal() {
+  const modal = document.getElementById('investment-modal');
+  const form = document.getElementById('investment-form');
+  const lastValue = investmentHistory[investmentHistory.length - 1].value;
+  
+  form.currentValue.value = lastValue;
+  form.totalInvested.value = totalInvested;
+  
+  showModal('investment-modal');
+}
+
+// Add investment form submit handler
+document.getElementById('investment-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const newValue = parseFloat(form.currentValue.value);
+  const newTotalInvested = parseFloat(form.totalInvested.value);
+  
+  // Update investment history
+  const today = new Date().toISOString().split('T')[0];
+  investmentHistory.push({ date: today, value: newValue });
+  
+  // Update total invested
+  window.totalInvested = newTotalInvested;
+  
+  hideModal(document.getElementById('investment-modal'));
+  renderInvestmentChart();
+  showSuccessAlert('Investment updated successfully!');
+});
+
+// --- Bills Updates ---
 function renderBillsTable() {
   const today = new Date();
   let html = '<thead><tr><th>Bill</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
   
-  for (const bill of bills) {
+  bills.forEach((bill, index) => {
     const dueDate = new Date(bill.due);
     let statusClass = bill.status.toLowerCase();
     if (bill.status === 'Unpaid') {
@@ -350,26 +432,44 @@ function renderBillsTable() {
     }
     
     html += `
-      <tr class="${bill.status === 'Paid' ? 'bill-row-paid' : ''}">
+      <tr class="${bill.status === 'Paid' ? 'bill-row-paid' : ''}" data-index="${index}">
         <td>${bill.name}</td>
         <td>${bill.due}</td>
         <td><span class="bill-status ${statusClass}">${bill.status}</span></td>
         <td>
           ${bill.status === 'Unpaid' ? 
-            `<button class="mark-paid-btn" onclick="markBillPaid(${bills.indexOf(bill)})">Mark Paid</button>` :
+            `<button class="mark-paid-btn" data-action="mark-paid" data-index="${index}">Mark Paid</button>` :
             ''
           }
-          <button class="update-btn" onclick="openBillModal(${bills.indexOf(bill)})">Edit</button>
+          <button class="update-btn" data-action="update-bill" data-index="${index}">Edit</button>
         </td>
       </tr>`;
-  }
+  });
   
   html += '</tbody>';
-  document.getElementById('bills-table').innerHTML = html;
+  const table = document.getElementById('bills-table');
+  table.innerHTML = html;
+  
+  // Attach event listeners to new buttons
+  table.querySelectorAll('.mark-paid-btn[data-action="mark-paid"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      markBillPaid(index);
+    });
+  });
+  
+  table.querySelectorAll('.update-btn[data-action="update-bill"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      openBillModal(index);
+    });
+  });
 }
 
 function markBillPaid(index) {
   bills[index].status = 'Paid';
+  const row = document.querySelector(`#bills-table tr[data-index="${index}"]`);
+  row.classList.add('highlight-row');
   renderBillsTable();
   showSuccessAlert('Bill marked as paid!');
 }
@@ -392,7 +492,7 @@ function openBillModal(index = -1) {
     deleteBtn.classList.add('hidden');
   }
   
-  modal.classList.remove('hidden');
+  showModal('bill-modal');
 }
 
 document.getElementById('bill-form').onsubmit = (e) => {
@@ -411,7 +511,7 @@ document.getElementById('bill-form').onsubmit = (e) => {
     bills[parseInt(index)] = data;
   }
   
-  document.getElementById('bill-modal').classList.add('hidden');
+  hideModal(document.getElementById('bill-modal'));
   renderBillsTable();
   showSuccessAlert('Bill updated successfully!');
 };
@@ -420,73 +520,101 @@ document.querySelector('#bill-form .delete-btn').onclick = (e) => {
   const index = document.getElementById('bill-form').billIndex.value;
   if (index !== '') {
     bills.splice(parseInt(index), 1);
-    document.getElementById('bill-modal').classList.add('hidden');
+    hideModal(document.getElementById('bill-modal'));
     renderBillsTable();
     showSuccessAlert('Bill deleted successfully!');
   }
 };
 
-// --- Budget Metrics ---
+// --- Budget Updates ---
 function renderBudgetMetrics() {
   const grouped = groupExpensesByCategory(expenses);
-  let html = '<table class="styled-table"><thead><tr><th>Category</th><th>Budgeted</th><th>Actual</th><th>Status</th></tr></thead><tbody>';
-  for (const b of budgets) {
+  let html = '<table class="styled-table"><thead><tr><th>Category</th><th>Budgeted</th><th>Actual</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  
+  budgets.forEach((b, index) => {
     const actual = grouped[b.category] || 0;
     const under = actual <= b.budgeted;
-    html += `<tr><td>${b.category}</td><td>$${b.budgeted}</td><td>$${actual.toFixed(2)}</td><td><div class="budget-bar-bg"><div class="budget-bar ${under ? 'under' : 'over'}" style="width:0%" data-width="${Math.min(100, Math.round((actual / b.budgeted) * 100))}%"></div></div></td></tr>`;
-  }
+    const percent = Math.min(100, Math.round((actual / b.budgeted) * 100));
+    
+    html += `
+      <tr data-index="${index}">
+        <td>${b.category}</td>
+        <td>$${b.budgeted.toFixed(2)}</td>
+        <td>$${actual.toFixed(2)}</td>
+        <td>
+          <div class="budget-bar-bg">
+            <div class="budget-bar ${under ? 'under' : 'over'}" style="width:0%" data-width="${percent}%"></div>
+          </div>
+        </td>
+        <td>
+          <button class="update-btn" data-action="update-budget" data-index="${index}">Update</button>
+        </td>
+      </tr>`;
+  });
+  
   html += '</tbody></table>';
-  document.getElementById('budget-metrics').innerHTML = html;
+  const container = document.getElementById('budget-metrics');
+  container.innerHTML = html;
+  
+  // Attach event listeners to new buttons
+  container.querySelectorAll('.update-btn[data-action="update-budget"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      openBudgetModal(index);
+    });
+  });
+  
   // Animate bars
   setTimeout(() => {
-    document.querySelectorAll('.budget-bar').forEach(bar => {
+    container.querySelectorAll('.budget-bar').forEach(bar => {
       bar.style.width = bar.getAttribute('data-width');
     });
   }, 100);
 }
 
-// --- Budget Updates ---
-function openBudgetModal() {
+function openBudgetModal(index) {
   const modal = document.getElementById('budget-modal');
   const form = document.getElementById('budget-form');
-  const select = form.category;
+  const budget = budgets[index];
   
-  // Update category options if needed
-  select.onchange = () => {
-    const budget = budgets.find(b => b.category === select.value);
-    if (budget) {
-      form.budgeted.value = budget.budgeted;
-    }
-  };
+  form.budgeted.value = budget.budgeted;
+  form.dataset.index = index;
+  form.category.value = budget.category;
   
-  // Set initial values
-  select.value = budgets[0].category;
-  form.budgeted.value = budgets[0].budgeted;
-  
-  modal.classList.remove('hidden');
+  showModal('budget-modal');
 }
 
 document.getElementById('budget-form').onsubmit = (e) => {
   e.preventDefault();
   const form = e.target;
-  const category = form.category.value;
+  const index = parseInt(form.dataset.index);
   const budgeted = parseFloat(form.budgeted.value);
   
-  const budget = budgets.find(b => b.category === category);
-  if (budget) {
-    budget.budgeted = budgeted;
-  }
+  budgets[index].budgeted = budgeted;
   
-  document.getElementById('budget-modal').classList.add('hidden');
+  hideModal(document.getElementById('budget-modal'));
   renderBudgetMetrics();
   showSuccessAlert('Budget updated successfully!');
 };
 
-// --- Initialize Modals ---
-setupModal('savings-modal', 'add-savings-goal-btn');
-setupModal('investment-modal', 'update-investment-btn');
-setupModal('bill-modal', 'add-bill-btn');
-setupModal('budget-modal', 'update-budget-btn');
+// --- Initialize ---
+document.addEventListener('DOMContentLoaded', () => {
+  // Setup all modals
+  setupModal('savings-modal');
+  setupModal('investment-modal');
+  setupModal('bill-modal');
+  setupModal('budget-modal');
+  
+  // Add new item button handlers
+  document.getElementById('add-savings-goal-btn')?.addEventListener('click', () => openSavingsModal());
+  document.getElementById('add-bill-btn')?.addEventListener('click', () => openBillModal());
+  
+  // Add update button handlers
+  document.getElementById('update-investment-btn')?.addEventListener('click', openInvestmentModal);
+  
+  // Initial render
+  renderAll();
+});
 
 // --- Render All Sections ---
 function renderAll() {
@@ -497,6 +625,4 @@ function renderAll() {
   renderInvestmentChart();
   renderBillsTable();
   renderBudgetMetrics();
-}
-
-document.addEventListener('DOMContentLoaded', renderAll); 
+} 
