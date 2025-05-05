@@ -1,68 +1,81 @@
-# Personal Finance Dashboard
+# 💸 Personal Finance Dashboard
 
-A responsive and interactive personal finance dashboard built with vanilla HTML, CSS, and JavaScript. No frameworks or libraries required!
+🚀 A sleek, **responsive** & **interactive** personal finance dashboard built using **vanilla HTML, CSS, and JavaScript** — no frameworks, no fuss!
 
-## Features
+🌐 [Live Demo](https://finance-dashboard-theta-rouge.vercel.app/)  
+📁 [GitHub Repo](https://github.com/LauhithN/Finance-Dashboard)
 
-- **Expense Tracking by Category**
-  - Interactive pie chart (pure SVG)
-  - Categorized expense table
-  - Visual expense breakdown
+---
 
-- **Daily Transactions**
-  - Add new transactions
-  - Sort by date or amount
-  - Filter by category
-  - Color-coded income/expenses
+## ✨ Features
 
-- **Savings Goals Progress**
-  - Visual progress bars
-  - Percentage completion
-  - Target amount tracking
+📊 **Expense Tracking by Category**
+- Interactive pie chart (pure SVG)
+- Categorized expense table
+- Visual expense breakdown
 
-- **Investment Portfolio Performance**
-  - Interactive line chart (pure SVG)
-  - Investment metrics
-  - Profit/Loss tracking
+🧾 **Daily Transactions**
+- ➕ Add new transactions
+- 🔃 Sort by date or amount
+- 🔍 Filter by category
+- 🔴🟢 Color-coded income/expenses
 
-- **Bill Payment Reminders**
-  - Due date tracking
-  - Status indicators
-  - Upcoming bill alerts
+🎯 **Savings Goals Progress**
+- 📈 Visual progress bars
+- 💯 Percentage completion
+- 🎯 Target amount tracking
 
-- **Budget Adherence Metrics**
-  - Budget vs. actual comparison
-  - Visual indicators for over/under budget
-  - Category-wise breakdown
+📈 **Investment Portfolio**
+- Interactive SVG line chart
+- 📊 Investment metrics
+- 📉 Profit/Loss tracking
 
-## Setup
+📅 **Bill Payment Reminders**
+- ⏰ Due date tracking
+- 🟡 Status indicators
+- 🔔 Upcoming alerts
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/LauhithN/Finance-Dashboard.git
-   ```
+📉 **Budget Adherence**
+- 💸 Budget vs. Actual
+- 🟢 Over/Under budget indicators
+- 📂 Category-wise breakdown
 
-2. Open `index.html` in your browser
+---
 
-No additional setup or dependencies required!
+## 🛠️ Setup Instructions
 
-## Usage
+Clone the repo and open the dashboard:
 
-- Add new transactions using the floating "+" button
-- Filter transactions by category using the dropdown
-- Sort transactions by date or amount
-- Track your savings goals progress
-- Monitor your investment performance
-- Keep track of upcoming bills
+```bash
+git clone https://github.com/LauhithN/Finance-Dashboard.git
+cd Finance-Dashboard
+open index.html
 
-## Technical Details
+🧑‍💼 How to Use
 
-- Pure HTML5, CSS3, and Vanilla JavaScript
-- Responsive design using CSS Grid and Flexbox
-- SVG-based charts (no external libraries)
-- Local storage for data persistence
-- Mobile-friendly interface
+➕ Use the floating "+" button to add transactions
 
-## Contributing
+🗂️ Filter by category via dropdown
 
-Feel free to fork this repository and submit pull requests for any improvements! 
+📅 Sort by date or amount
+
+🎯 Track your savings and budget adherence
+
+📈 Monitor investments and upcoming bills
+
+⚙️ Tech Stack
+Tech	Used For
+HTML5	Structure
+CSS3	Layout & Responsiveness
+JavaScript	Dynamic interactivity
+SVG	Custom charts
+LocalStorage	Data persistence
+
+✅ Fully responsive and mobile-friendly
+
+🤝 Contributing
+Pull requests are welcome!
+Feel free to fork and make this even better 🎉
+
+📄 License
+MIT License © LauhithN
